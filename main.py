@@ -1,3 +1,4 @@
+import random
 import pygame
 import sys
 
@@ -30,51 +31,99 @@ def main():
     
     # Convertir a matriz de 8x6
     matrix = [coordinates[i:i + 8] for i in range(0, len(coordinates), 8)]
-
+    
+    selected_circle = None
+    arr_cant_fichas = [0] * 8 #lista que almacena la cantidad de fichas en cada columna
     # for fila in matrix:
     #     for coordenada in fila:
     #         print(coordenada)
         
-    # Agregar las posiciones de los círculos negros horizontalmente
-    # for x in range(155, 575 + 1, 70):
-    #     black_circle_positions.append([x, 100])
+    #Agregar las posiciones de los círculos negros horizontalmente
+    for x in range(155, 575 + 1, 70):
+        black_circle_positions.append([x, 100])
 
-    # # Agregar las posiciones de los círculos negros verticalmente
-    # for y in range(145, 325 + 1, 45):
-    #     black_circle_positions.append([575, y])
+    # Agregar las posiciones de los círculos negros verticalmente
+    for y in range(145, 325 + 1, 45):
+        black_circle_positions.append([575, y])
 
-    # # Agregar las posiciones de los círculos rojos horizontalmente
-    # for x in range(85, 505 + 1, 70):
-    #     red_circle_positions.append([x, 325])
+    # Agregar las posiciones de los círculos rojos horizontalmente
+    for x in range(85, 505 + 1, 70):
+        red_circle_positions.append([x, 325])
 
-    # # Agregar las posiciones de los círculos rojos verticalmente
-    # for y in range(100, 280 + 1, 45):
-    #     red_circle_positions.append([85, y])
+    # Agregar las posiciones de los círculos rojos verticalmente
+    for y in range(100, 280 + 1, 45):
+        red_circle_positions.append([85, y])
 
-    print("positions black: ", black_circle_positions)
-    print("positions red: ", red_circle_positions)
-    print(black_circle_positions[1])
-    selected_circle = None
-    color_ficha = ""
-    cant_fichas = 0 #almacena la cantidad de fichas
-    cant_fichas_negras = 0
-    arr_cant_fichas = [0] * 8 #lista que almacena la cantidad de fichas en cada columna
-    termina = False
     
-    
-    
-    while True:
+    def board(black_circle_positions, red_circle_positions, arr_cant_fichas):
         fondo = pygame.image.load("tablero.png").convert()
         screen.blit(fondo, (0, 0))
         
+        color_ficha = ""
+        
+        #pinta los circulos
+        for pos in black_circle_positions:
+            pygame.draw.circle(screen, BLACK, pos, 15)
+        for pos in red_circle_positions:
+            pygame.draw.circle(screen, RED, pos, 15)
+            
+        if selected_circle in black_circle_positions:
+            color_ficha = "Negra"
+        elif selected_circle in red_circle_positions:
+            color_ficha = "Roja"
+        else:
+            color_ficha = "/"
+        # Mensaje ficha seleccionada
+        mensaje = "Ficha "+color_ficha+" seleccionada"
+        posicion_mensaje = (10, 10)  
+        mostrar_mensaje(screen, mensaje, posicion_mensaje)
+        
+        #mensaje cantidad de fichas en cada columna
+        for item in range(8): 
+            mensaje = str(arr_cant_fichas[item])
+            posicion_mensaje = posicion_utilidad[item]  
+            mostrar_mensaje(screen, mensaje, posicion_mensaje)
+    
+    #verifica si el juego termina
+    def termina(black_circle_positions, red_circle_positions, coordinates):
+        cant_fichas_negras = 0
+        #comprobar si termina el juego
+        for i in range(8):
+            for item in coordinates[i * 6: (i + 1) * 6]:
+                if item in black_circle_positions:
+                    cant_fichas_negras += 1
+                elif item in red_circle_positions:
+                    cant_fichas_negras = 0
+            if cant_fichas_negras == 12:
+                return True
+            else:
+                return False
+        
+    def suma_columna(black_circle_positions, red_circle_positions, arr_cant_fichas):
+        #contar y sumar la cantidad de fichas en cada columna
+        for i in range(8):
+            cant_fichas = 0
+            # print(f"columna{i + 1}")
+            for item in coordinates[i * 6: (i + 1) * 6]:
+                if item in black_circle_positions:
+                    cant_fichas += 1
+                elif item in red_circle_positions:
+                    cant_fichas += 1
+                
+            arr_cant_fichas[i] = cant_fichas
+        return arr_cant_fichas    
+    
+    turno_maquina = False
+    while True:
+        print("turno humano")
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
-            elif event.type == pygame.MOUSEBUTTONDOWN:
+            elif event.type == pygame.MOUSEBUTTONDOWN: 
                 print("CLIC")
                 mouse_pos = pygame.mouse.get_pos()
                 if selected_circle is None:
-                    for pos in black_circle_positions + red_circle_positions:
+                    for pos in red_circle_positions:
                         if pos[0] - 15 < mouse_pos[0] < pos[0] + 15 and pos[1] - 15 < mouse_pos[1] < pos[1] + 15:    
                             selected_circle = pos
                 else:
@@ -90,84 +139,28 @@ def main():
                         for item in coordinates:
                             if item[0] - 15 < mouse_pos[0] < item[0] + 15 and item[1] - 15 < mouse_pos[1] < item[1] + 15:
                                 selected_circle[0], selected_circle[1] = item
+                                turno_maquina = True
                         # selected_circle[0], selected_circle[1] = mouse_pos
                         selected_circle = None
-        
-        if selected_circle in black_circle_positions:
-            color_ficha = "Negra"
-        elif selected_circle in red_circle_positions:
-            color_ficha = "Roja"
-        else:
-            color_ficha = "/"
-        # Mensaje ficha seleccionada
-        mensaje = "Ficha "+color_ficha+" seleccionada"
-        posicion_mensaje = (10, 10)  
-        mostrar_mensaje(screen, mensaje, posicion_mensaje)
-        
-        
-        # print("------------------------")
-        # for item in coordinates[:6]:
-        #     print("columna1",item)
-        # for item in coordinates[7:12]:
-        #     print("columna2",item)
-        # for item in coordinates[13:18]:
-        #     print("columna3",item)
-        # for item in coordinates[19:24]:
-        #     print("columna4",item)
-        # for item in coordinates[25:30]:
-        #     print("columna5",item)
-        # for item in coordinates[31:36]:
-        #     print("columna6",item)
-        # for item in coordinates[38:42]:
-        #     print("columna7",item)
-        # for item in coordinates[43:48]:
-        #     print("columna8",item)
-        # Imprimir grupos de coordenadas
     
-        #contar y sumar la cantidad de fichas en cada columna
-        column_count = 8
-        for i in range(column_count):
-            cant_fichas = 0
-            # print(f"columna{i + 1}")
-            for item in coordinates[i * 6: (i + 1) * 6]:
-                if item in black_circle_positions:
-                    cant_fichas += 1
-                elif item in red_circle_positions:
-                    cant_fichas += 1
-                
-            arr_cant_fichas[i] = cant_fichas
-        
-        # print("-------------")
-        
-        #comprobar si termina el juego
-        for i in range(column_count):
-            for item in coordinates[i * 6: (i + 1) * 6]:
-                if item in black_circle_positions:
-                    termina = False
-                    cant_fichas_negras += 1
-                elif item in red_circle_positions:
-                    cant_fichas_negras = 0
-                    termina = True
-            if cant_fichas_negras == 12:
-                print(cant_fichas_negras)
+        if turno_maquina:
+            print("turno maquina")
+            
+            ficha_negra_aleatoria = random.choice(black_circle_positions)
+            coordenada_aleatoria = random.choice(coordinates)
+            if coordenada_aleatoria not in black_circle_positions + red_circle_positions:
+                ficha_negra_aleatoria[0], ficha_negra_aleatoria[1] = coordenada_aleatoria
+                turno_maquina = False
                 
             
+        cant_fichas = suma_columna(black_circle_positions, red_circle_positions, arr_cant_fichas)
         
-        #mensaje cantidad de fichas en cada columna
-        for item in range(8): 
-            mensaje = str(arr_cant_fichas[item])
-            posicion_mensaje = posicion_utilidad[item]  
-            mostrar_mensaje(screen, mensaje, posicion_mensaje)
+        termina(black_circle_positions, red_circle_positions, coordinates)
         
-        
-        #pinta los circulos
-        for pos in black_circle_positions:
-            pygame.draw.circle(screen, BLACK, pos, 15)
-        for pos in red_circle_positions:
-            pygame.draw.circle(screen, RED, pos, 15)
+        board(black_circle_positions, red_circle_positions, cant_fichas)
 
         # Controlar la velocidad de actualización
-        pygame.time.Clock().tick(100)
+        pygame.time.Clock().tick(20)
         
         #actualiza
         pygame.display.flip()
