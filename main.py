@@ -7,6 +7,12 @@ HEIGHT = 480
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 
+def mostrar_mensaje(screen, mensaje, posicion):
+    color = (255, 255, 255)  # Color blanco
+    font = pygame.font.Font(None, 28)
+    text = font.render(mensaje, True, color)
+    screen.blit(text, posicion)
+
 def main():
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -14,27 +20,48 @@ def main():
 
     black_circle_positions = []
     red_circle_positions = []
-    coordinates = [[155, 100], [225, 100], [295, 100], [365, 100], [435, 100], [505, 100], [575, 100], [575, 145], [575, 190], [575, 235], [575, 280], [575, 325], [85, 325], [155, 325], [225, 325], [295, 325], [365, 325], [435, 325], [505, 325], [85, 100], [85, 145], [85, 190], [85, 235], [85, 280], [155, 145], [155, 190], [155, 235], [155, 280], [225, 145], [225, 190], [225, 235], [225, 280], [295, 145], [295, 190], [295, 235], [295, 280], [365, 145], [365, 190], [365, 235], [365, 280], [435, 145], [435, 190], [435, 235], [435, 280], [505, 145], [505, 190], [505, 235], [505, 280]]
+    # black_circle_positions = [[155, 100], [225, 100], [295, 100], [295, 190], [295, 145], [155, 145], [155, 190], [155, 235], [155, 280], [155, 325], [225, 145], [225, 190]]
+    # red_circle_positions = [[365, 235], [365, 190], [365, 145], [505, 280], [365, 325], [435, 325], [505, 325], [435, 145], [435, 190], [435, 235], [435, 280], [365, 280]]
     
+    coordinates = [[85, 100], [85, 145], [85, 190], [85, 235], [85, 280], [85, 325], [155, 100], [155, 145], [155, 190], [155, 235], [155, 280], [155, 325], [225, 100], [225, 145], [225, 190], [225, 235], [225, 280], [225, 325], [295, 100], [295, 145], [295, 190], [295, 235], [295, 280], [295, 325], [365, 100], [365, 145], [365, 190], [365, 235], [365, 280], [365, 325], [435, 100], [435, 145], [435, 190], [435, 235], [435, 280], [435, 325], [505, 100], [505, 145], [505, 190], [505, 235], [505, 280], [505, 325], [575, 100], [575, 145], [575, 190], [575, 235], [575, 280], [575, 325]]
+    
+    posicion_utilidad = [[85, 370], [155, 370], [225, 370], [295, 370], [365, 370], [435, 370], [505, 370], [575, 370]]
+   
+    
+    # Convertir a matriz de 8x6
+    matrix = [coordinates[i:i + 8] for i in range(0, len(coordinates), 8)]
+
+    # for fila in matrix:
+    #     for coordenada in fila:
+    #         print(coordenada)
+        
     # Agregar las posiciones de los círculos negros horizontalmente
-    for x in range(155, 575 + 1, 70):
-        black_circle_positions.append([x, 100])
+    # for x in range(155, 575 + 1, 70):
+    #     black_circle_positions.append([x, 100])
 
-    # Agregar las posiciones de los círculos negros verticalmente
-    for y in range(145, 325 + 1, 45):
-        black_circle_positions.append([575, y])
+    # # Agregar las posiciones de los círculos negros verticalmente
+    # for y in range(145, 325 + 1, 45):
+    #     black_circle_positions.append([575, y])
 
-    # Agregar las posiciones de los círculos rojos horizontalmente
-    for x in range(85, 505 + 1, 70):
-        red_circle_positions.append([x, 325])
+    # # Agregar las posiciones de los círculos rojos horizontalmente
+    # for x in range(85, 505 + 1, 70):
+    #     red_circle_positions.append([x, 325])
 
-    # Agregar las posiciones de los círculos rojos verticalmente
-    for y in range(100, 280 + 1, 45):
-        red_circle_positions.append([85, y])
+    # # Agregar las posiciones de los círculos rojos verticalmente
+    # for y in range(100, 280 + 1, 45):
+    #     red_circle_positions.append([85, y])
 
     print("positions black: ", black_circle_positions)
     print("positions red: ", red_circle_positions)
+    print(black_circle_positions[1])
     selected_circle = None
+    color_ficha = ""
+    cant_fichas = 0 #almacena la cantidad de fichas
+    cant_fichas_negras = 0
+    arr_cant_fichas = [0] * 8 #lista que almacena la cantidad de fichas en cada columna
+    termina = False
+    
+    
     
     while True:
         fondo = pygame.image.load("tablero.png").convert()
@@ -48,10 +75,8 @@ def main():
                 mouse_pos = pygame.mouse.get_pos()
                 if selected_circle is None:
                     for pos in black_circle_positions + red_circle_positions:
-                        if pos[0] - 15 < mouse_pos[0] < pos[0] + 15 and pos[1] - 15 < mouse_pos[1] < pos[1] + 15:
+                        if pos[0] - 15 < mouse_pos[0] < pos[0] + 15 and pos[1] - 15 < mouse_pos[1] < pos[1] + 15:    
                             selected_circle = pos
-                            
-                      
                 else:
                     # Verifica si la nueva posición está ocupada
                     collision = False
@@ -67,17 +92,87 @@ def main():
                                 selected_circle[0], selected_circle[1] = item
                         # selected_circle[0], selected_circle[1] = mouse_pos
                         selected_circle = None
-                    
         
+        if selected_circle in black_circle_positions:
+            color_ficha = "Negra"
+        elif selected_circle in red_circle_positions:
+            color_ficha = "Roja"
+        else:
+            color_ficha = "/"
+        # Mensaje ficha seleccionada
+        mensaje = "Ficha "+color_ficha+" seleccionada"
+        posicion_mensaje = (10, 10)  
+        mostrar_mensaje(screen, mensaje, posicion_mensaje)
+        
+        
+        # print("------------------------")
+        # for item in coordinates[:6]:
+        #     print("columna1",item)
+        # for item in coordinates[7:12]:
+        #     print("columna2",item)
+        # for item in coordinates[13:18]:
+        #     print("columna3",item)
+        # for item in coordinates[19:24]:
+        #     print("columna4",item)
+        # for item in coordinates[25:30]:
+        #     print("columna5",item)
+        # for item in coordinates[31:36]:
+        #     print("columna6",item)
+        # for item in coordinates[38:42]:
+        #     print("columna7",item)
+        # for item in coordinates[43:48]:
+        #     print("columna8",item)
+        # Imprimir grupos de coordenadas
+    
+        #contar y sumar la cantidad de fichas en cada columna
+        column_count = 8
+        for i in range(column_count):
+            cant_fichas = 0
+            # print(f"columna{i + 1}")
+            for item in coordinates[i * 6: (i + 1) * 6]:
+                if item in black_circle_positions:
+                    cant_fichas += 1
+                elif item in red_circle_positions:
+                    cant_fichas += 1
+                
+            arr_cant_fichas[i] = cant_fichas
+        
+        # print("-------------")
+        
+        #comprobar si termina el juego
+        for i in range(column_count):
+            for item in coordinates[i * 6: (i + 1) * 6]:
+                if item in black_circle_positions:
+                    termina = False
+                    cant_fichas_negras += 1
+                elif item in red_circle_positions:
+                    cant_fichas_negras = 0
+                    termina = True
+            if cant_fichas_negras == 12:
+                print(cant_fichas_negras)
+                
+            
+        
+        #mensaje cantidad de fichas en cada columna
+        for item in range(8): 
+            mensaje = str(arr_cant_fichas[item])
+            posicion_mensaje = posicion_utilidad[item]  
+            mostrar_mensaje(screen, mensaje, posicion_mensaje)
+        
+        
+        #pinta los circulos
         for pos in black_circle_positions:
             pygame.draw.circle(screen, BLACK, pos, 15)
         for pos in red_circle_positions:
             pygame.draw.circle(screen, RED, pos, 15)
 
         # Controlar la velocidad de actualización
-        pygame.time.Clock().tick(60)
+        pygame.time.Clock().tick(100)
         
+        #actualiza
         pygame.display.flip()
+        
+        
 
 if __name__ == "__main__":
     main()
