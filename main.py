@@ -25,22 +25,34 @@ def main():
     # red_circle_positions = [[365, 235], [365, 190], [365, 145], [505, 280], [365, 325], [435, 325], [505, 325], [435, 145], [435, 190], [435, 235], [435, 280], [365, 280]]
     
     coordinates = [[85, 100], [155, 100], [225, 100], [295, 100], [365, 100], [435, 100], [505, 100], [575,100], [85, 145], [155, 145], [225, 145], [295, 145], [365, 145], [435, 145], [505, 145], [575, 145], [85, 190], [155, 190], [225, 190], [295, 190], [365, 190], [435, 190], [505, 190], [575, 190], [85, 235], [155, 235], [225, 235], [295, 235], [365, 235], [435, 235], [505, 235], [575, 235], [85, 280], [155, 280], [225, 280], [295, 280], [365, 280], [435, 280], [505, 280], [575, 280],[85, 325], [155, 325], [225, 325], [295, 325], [365, 325], [435, 325], [505, 325], [575, 325]]
-    
     posicion_utilidad = [[85, 370], [155, 370], [225, 370], [295, 370], [365, 370], [435, 370], [505, 370], [575, 370]]
-   
     
     # Convertir a matriz de 8x6 las coordenadas permitidas
     matrix = [coordinates[i:i + 8] for i in range(0, len(coordinates), 8)]
     selected_circle = None
-    # num_filas = len(matrix)
-    # num_columnas = len(matrix[0]) if num_filas > 0 else 0
-    # for col_index in range(num_columnas):
-    #     for fila_index in range(num_filas):
-    #         item = matrix[fila_index][col_index]
-    #         print(item)
     
-    # print(matrix)
-    
+    # Crear una nueva matriz con ceros
+    new_matrix = [[0 for _ in range(len(matrix[0]))] for _ in range(len(matrix))]
+
+    def convertir_matrix(black_circle_positions, red_circle_positions):
+        # Colocar las coordenadas de black_circle_positions en la nueva matriz
+        for coord in black_circle_positions:
+            for i, fila in enumerate(matrix):
+                if coord in fila:
+                    j = fila.index(coord)
+                    new_matrix[i][j] = coord  # Puedes usar cualquier valor que desees, aquí he usado 1 como ejemplo
+
+        # Colocar las coordenadas de red_circle_positions en la nueva matriz
+        for coord in red_circle_positions:
+            for i, fila in enumerate(matrix):
+                if coord in fila:
+                    j = fila.index(coord)
+                    new_matrix[i][j] = coord  # Puedes usar cualquier valor que desees, aquí he usado 2 como ejemplo
+
+        # Imprimir la nueva matriz
+        for fila in new_matrix:
+            print(fila)
+        
     #Agregar las posiciones de los círculos negros horizontalmente
     for x in range(155, 575 + 1, 70):
         black_circle_positions.append([x, 100])
@@ -126,55 +138,108 @@ def main():
         return arr_cant_fichas    
     
     turno_maquina = False
+    
+    columna_encontrada = [] #array para almacenar la columna donde se mueve la ficha
+    utilidad = [] #array para almacenar los valores de cada columna o cuantas fichas hay para determinar el siguiente movimiento
+    cant_movimientos = []
+    turno = 0
+    segundo_movimiento = []
+    ficha_negra_aleatoria = []
     while True:
         
-        # print("turno humano")
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                sys.exit()
-            elif event.type == pygame.MOUSEBUTTONDOWN: 
-                print("CLIC")
-                mouse_pos = pygame.mouse.get_pos()
-                if selected_circle is None:
-                    for pos in red_circle_positions:
-                        if pos[0] - 15 < mouse_pos[0] < pos[0] + 15 and pos[1] - 15 < mouse_pos[1] < pos[1] + 15:    
-                            selected_circle = pos
-                else:
-                    # Verifica si la nueva posición está ocupada
-                    collision = False
-                    for item in black_circle_positions + red_circle_positions:
-                        if item[0] - 15 < mouse_pos[0] < item[0] + 15 and item[1] - 15 < mouse_pos[1] < item[1] + 15:
-                            collision = True
-                            break
-                    
-                    # Si no hay colisión, mueve el círculo
-                    if not collision:
-                        # index = 0                    
-                        for fila in matrix:
-                            index = 0
-                            for item in fila:
-                                if item[0] - 15 < mouse_pos[0] < item[0] + 15 and item[1] - 15 < mouse_pos[1] < item[1] + 15:
-                                    selected_circle[0], selected_circle[1] = item
-                                    cant_movimientos = suma_columna(black_circle_positions, red_circle_positions)
-                                    turno = cant_movimientos[index] - 1
-                                    
-                                    turno_maquina = True
-                                 
-                                index += 1
-                            # selected_circle[0], selected_circle[1] = mouse_pos
-                        selected_circle = None
-
-                    # print(turno)
-            
-    
+        if turno_maquina == False:
+            # print("turno humano")
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    sys.exit()
+                elif event.type == pygame.MOUSEBUTTONDOWN: 
+                    print("CLIC")
+                   
+                    mouse_pos = pygame.mouse.get_pos()
+                    if selected_circle is None:
+                        for pos in red_circle_positions:
+                            if pos[0] - 15 < mouse_pos[0] < pos[0] + 15 and pos[1] - 15 < mouse_pos[1] < pos[1] + 15:    
+                                selected_circle = pos
+                                
+                    else:
+                       
+                        # Verifica si la nueva posición está ocupada
+                        collision = False
+                        for item in black_circle_positions + red_circle_positions:
+                            if item[0] - 15 < mouse_pos[0] < item[0] + 15 and item[1] - 15 < mouse_pos[1] < item[1] + 15:
+                                collision = True
+                                break     
+                        
+                        # Si no hay colisión, mueve el círculo
+                        if not collision:        
+                            for fila in matrix:
+                                for item in fila:
+                                    if item[0] - 15 < mouse_pos[0] < item[0] + 15 and item[1] - 15 < mouse_pos[1] < item[1] + 15:
+                                        turno += 1
+                                        segundo_movimiento.append(selected_circle.copy())
+                                        selected_circle[0], selected_circle[1] = item
+                                        turno_maquina = True
+                                        # print("turno: ",turno)
+                                        # if turno == 1:
+                                        #     if segundo_movimiento[0][0] - 15 < mouse_pos[0] < segundo_movimiento[0][0] + 15 and segundo_movimiento[0][1] - 15 < mouse_pos[1] < segundo_movimiento[0][1] + 15:
+                                        #         selected_circle[0], selected_circle[1] = item
+                                        # if turno == 2:
+                                        #     if segundo_movimiento[1][0] - 15 < mouse_pos[0] < segundo_movimiento[1][0] + 15 and segundo_movimiento[1][1] - 15 < mouse_pos[1] < segundo_movimiento[1][1] + 15:
+                                        #         selected_circle[0], selected_circle[1] = item
+                                        #     else:
+                                        #         print("seleccione la ficha")
+                                
+                            #verificar en qué columna está el circulo movido
+                            for fila in matrix:
+                                if selected_circle in fila:
+                                    columna_encontrada.append(fila.index(selected_circle))
+                                    break  # Detenemos la búsqueda si se encuentra la coordenada
+                            utilidad.append(suma_columna(black_circle_positions, red_circle_positions))
+                            cant_movimientos.append(utilidad[0][columna_encontrada[0]] - 1)
+                            selected_circle = None
+                            
+                            # print("cant_movimientos antes: ",cant_movimientos[0])
+                            if cant_movimientos[0] == 0:
+                                turno_maquina = True
+                                columna_encontrada = [] 
+                                utilidad = [] 
+                                cant_movimientos = []
+                                segundo_movimiento = []
+                            else:
+                                cant_movimientos[0] -= 1
+                            print(cant_movimientos)
+                            print("cant_movimientos diponibles humano: ",cant_movimientos[0])
+                            print("segundo_mov: ", segundo_movimiento)
+        
+        
         if turno_maquina:
+            
             # print("turno maquina")
-            ficha_negra_aleatoria = random.choice(black_circle_positions)
+            ficha_negra_aleatoria.append(random.choice(black_circle_positions))
             coordenada_aleatoria = random.choice(coordinates)
             if coordenada_aleatoria not in black_circle_positions + red_circle_positions:
-                ficha_negra_aleatoria[0], ficha_negra_aleatoria[1] = coordenada_aleatoria
-                turno_maquina = False
+                ficha_negra_aleatoria[0][0], ficha_negra_aleatoria[0][1] = coordenada_aleatoria
+            
+                #verificar en qué columna está el circulo movido
+                for fila in matrix:
+                    if ficha_negra_aleatoria in fila:
+                        columna_encontrada.append(fila.index(ficha_negra_aleatoria))
+                        break  # Detenemos la búsqueda si se encuentra la coordenada
+                utilidad.append(suma_columna(black_circle_positions, red_circle_positions))
+                cant_movimientos.append(utilidad[0][columna_encontrada[0]] - 1)
+                print("cantidad movimientos maquina: ",cant_movimientos[0])  
                 
+                if cant_movimientos[0] == 0:
+                    turno_maquina = False
+                    columna_encontrada = [] 
+                    utilidad = [] 
+                    cant_movimientos = []  
+                    segundo_movimiento = []
+                    ficha_negra_aleatoria = []
+                else:
+                    cant_movimientos[0] -= 1
+            print("ficha negra: ",ficha_negra_aleatoria)
+            
             
         cant_fichas = suma_columna(black_circle_positions, red_circle_positions)
         
@@ -182,8 +247,10 @@ def main():
         
         board(black_circle_positions, red_circle_positions, cant_fichas)
 
+        # convertir_matrix(black_circle_positions, red_circle_positions)
+        
         # Controlar la velocidad de actualización
-        pygame.time.Clock().tick(20)
+        pygame.time.Clock().tick(5)
         
         #actualiza
         pygame.display.flip()
